@@ -102,6 +102,21 @@ extern "C" BOOL WINAPI DllMain(
     //
     if (DLL_PROCESS_ATTACH == dwReason && bStatus)
     {
+#if defined(_DLL)
+        //
+        // Disable the DLL_THREAD_ATTACH and DLL_THREAD_DETACH notification
+        // calls as the DLL does not provide any handlers for thread-level
+        // attachment/detachment notifications. This can be a useful
+        // optimization for multithreaded applications that frequently create
+        // and delete threads
+        //
+        // Only DLLs that are linked to the dynamic C run-time library (CRT)
+        // may implement the optimization
+        //
+        if (!::DisableThreadLibraryCalls(hInstance))
+        {
+        }
+#endif /* defined(_DLL) */
     }
 
     return bStatus;
