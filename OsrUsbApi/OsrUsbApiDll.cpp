@@ -220,7 +220,7 @@ __useHeader STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv) 
 {
     HRESULT hr;
 
-    OSR_LOG_TRACE("Entering %!FUNC!.");
+    OSR_LOG_TRACE("Entering %!FUNC!(%!CLSID!, %!IID!, 0x%p).", &rclsid, &riid, ppv);
 
     hr = g_OsrUsbApiModule.DllGetClassObject(rclsid, riid, ppv);
 
