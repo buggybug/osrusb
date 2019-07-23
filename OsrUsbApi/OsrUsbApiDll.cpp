@@ -141,8 +141,8 @@ extern "C" BOOL WINAPI DllMain(
             //
             if (!::DisableThreadLibraryCalls(hInstance))
             {
-                OSR_LOG_WARNING("Failed to disable thread library calls: %!HRESULT!.",
-                    HRESULT_FROM_WIN32(::GetLastError()));
+                OSR_LOG_WARNING("Failed to disable thread library calls: %!WINERROR!.",
+                    ::GetLastError());
             }
 #endif /* defined(_DLL) */
         }
