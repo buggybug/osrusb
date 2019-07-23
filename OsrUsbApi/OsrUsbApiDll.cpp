@@ -128,7 +128,7 @@ extern "C" BOOL WINAPI DllMain(
     {
         if (bStatus)
         {
-#if defined(_DLL)
+#if defined(_DLL) && !defined(_ATL_MIN_CRT)
             //
             // Disable the DLL_THREAD_ATTACH and DLL_THREAD_DETACH notification
             // calls as the DLL does not provide any handlers for thread-level
@@ -144,7 +144,7 @@ extern "C" BOOL WINAPI DllMain(
                 OSR_LOG_WARNING("Failed to disable thread library calls: %!WINERROR!.",
                     ::GetLastError());
             }
-#endif /* defined(_DLL) */
+#endif /* defined(_DLL) && !defined(_ATL_MIN_CRT) */
         }
         else
         {
