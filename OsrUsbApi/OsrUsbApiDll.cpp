@@ -224,6 +224,15 @@ __useHeader STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv) 
 
     hr = g_OsrUsbApiModule.DllGetClassObject(rclsid, riid, ppv);
 
+    if (S_OK == hr)
+    {
+        //
+        // Assume that the destination pointer is valid if the result is S_OK
+        // Print interface pointer (probably IClassFactory)
+        //
+        OSR_LOG_TRACE("Interface pointer: 0x%p.", *ppv);
+    }
+
     OSR_LOG_TRACE("Leaving %!FUNC!: %!HRESULT!.", hr);
 
     return hr;
