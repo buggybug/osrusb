@@ -57,7 +57,8 @@ SOURCES=\
         OsrUsbApiDll.idl                     \
         $(OBJ_PATH)\$(O)\OsrUsbApiDll_i.c    \
         OsrUsbApiLogging.cpp                 \
-        OsrUsbApiModule.cpp
+        OsrUsbApiModule.cpp                  \
+        OsrUsbDeviceEnumerator.cpp
 
 TARGETLIBS=\
         $(SDK_LIB_PATH)\kernel32.lib         \
