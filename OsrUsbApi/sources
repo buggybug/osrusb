@@ -1,0 +1,100 @@
+!IF 0
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Copyright (c) 2019 Bohdan Yevtukh. All rights reserved.
+
+Module Name:
+
+    sources.
+
+Abstract:
+
+    This file tells "build" how to build the OSR USB API COM server.
+
+!ENDIF
+
+TARGETNAME=OsrUsbApi
+TARGETTYPE=DYNLINK
+
+DLLENTRY=_DllMainCRTStartup
+DLLDEF = OsrUsbApiDll.def
+
+PRECOMPILED_CXX=1
+PRECOMPILED_INCLUDE=pch.h
+PRECOMPILED_PCH=OsrUsbApiDll.pch
+PRECOMPILED_OBJ=pch.obj
+
+USE_NOLIBS=1
+USE_ATL=1
+ATL_VER=70
+USE_MSVCRT=1
+
+IDL_TYPE=ole
+
+MSC_WARNING_LEVEL=/W4 /WX
+
+C_DEFINES=$(C_DEFINES) -D_WINDLL -D_USRDLL -DUNICODE -D_UNICODE
+
+BUFFER_OVERFLOW_CHECKS=1
+
+COMMON_DIR = ..\OsrUsbCommon
+
+INCLUDES=\
+        $(DDK_INC_PATH);                     \
+        $(COMMON_DIR);                       \
+        $(OBJ_PATH)\$(O);
+
+SOURCES=\
+        OsrUsbApiDll.cpp                     \
+        OsrUsbApiDll.rc                      \
+        OsrUsbApiDll.idl                     \
+        $(OBJ_PATH)\$(O)\OsrUsbApiDll_i.c    \
+        OsrUsbApiLogging.cpp                 \
+        OsrUsbApiModule.cpp                  \
+        OsrUsbDeviceEnumerator.cpp
+
+TARGETLIBS=\
+        $(SDK_LIB_PATH)\kernel32.lib         \
+        $(SDK_LIB_PATH)\ole32.lib            \
+        $(SDK_LIB_PATH)\oleaut32.lib         \
+        $(SDK_LIB_PATH)\uuid.lib             \
+        $(SDK_LIB_PATH)\user32.lib           \
+        $(SDK_LIB_PATH)\advapi32.lib
+
+NO_PUBLIC_EXPORTS=1
+
+#
+# Comment the below line to disable tracing. All the debug traces
+# will be sent to the debugger.
+ENABLE_EVENT_TRACING=1
+
+!IFDEF ENABLE_EVENT_TRACING
+
+C_DEFINES = $(C_DEFINES) -DEVENT_TRACING
+
+WPP_CONFIG_FILE = $(COMMON_DIR)\OsrUsbLogging.h
+
+#
+# Generate WPP tracing code
+# $(SOURCES) -- run software preprocessor on files listed in SOURCES
+# -dll       -- target type is the DLL
+# -um        -- use user mode
+# -scan      -- set the file that should be scanned for a WPP config
+# -gen       -- specify the template file name and template message
+#               header file extension
+#
+RUN_WPP= $(SOURCES)                          \
+         -dll                                \
+         -um                                 \
+         -scan:"$(WPP_CONFIG_FILE)"          \
+         -gen:{um-default.tpl}*.tmh
+
+
+!ENDIF

@@ -1,0 +1,152 @@
+/*++
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Copyright (c) 2019 Bohdan Yevtukh. All rights reserved.
+
+Module Name:
+
+    OsrUsbApiDll.idl
+
+Abstract:
+
+    Definition of COM interfaces and coclasses for the DLL.
+
+--*/
+
+#if defined(_MSC_VER) && (_MSC_VER >= 1700)
+cpp_quote("#include <winapifamily.h>")
+
+#pragma region Desktop Family
+cpp_quote("#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)")
+#endif /* defined(_MSC_VER) && (_MSC_VER >= 1700) */
+
+import "unknwn.idl";
+
+// ---------------------------------------------------------------------------
+// Interfaces
+// ---------------------------------------------------------------------------
+
+
+// ---------------------------------------------------------------------------
+// IOsrUsbDeviceEnumerator
+//
+// Provides methods for enumerating IOsrUsbDevice objects.
+//
+[
+    object,
+    local,
+    uuid(5BDE15B1-6022-49EB-84C2-0829DB79F4C6),
+    nonextensible,
+    helpstring("OsrUsbDeviceEnumerator Interface"),
+    pointer_default(unique)
+]
+interface IOsrUsbDeviceEnumerator : IUnknown
+{
+    //----------------------------------------------------------------------------
+    // Description:
+    //      Enumerates the OSR USB devices available in the system that may be
+    //      controlled by the DLL.
+    //
+    //      This function needs to be called once before a device instance can be
+    //      opened via GetDeviceByIndex.
+    //
+    //      A successful call to this function creates an internal device list
+    //      which represents all supported OSR USB devices available in the system.
+    //      Device instances (USB devices) are addressed by means of a zero-based
+    //      index that is passed to GetDeviceByIndex.
+    //
+    //      Even if the function succeeds, there may be no devices available in the
+    //      system. An application should call GetDeviceCount to check for
+    //      available devices.
+    //
+    //      A call to this function invalidates internal device list. After this
+    //      function is called, it is strongly recommended to reopen devices again
+    //      by calling GetDeviceByIndex.
+    //
+    // Parameters:
+    //      void - (unused argument).
+    //
+    // Return Values:
+    //      S_OK - The method succeeded.
+    //      E_OUTOFMEMORY - Out of memory.
+    //
+    [id(1), helpstring("method EnumerateDevices")]
+    HRESULT EnumerateDevices();
+
+    //----------------------------------------------------------------------------
+    // Description:
+    //      Retrieves the number of known OSR USB devices that are currently
+    //      connected to the computer.
+    //
+    // Parameters:
+    //      pdwDeviceCount - [out] A pointer to a DWORD specifying the count of known
+    //                       OSR USB devices.
+    //
+    // Return Values:
+    //      S_OK - The method succeeded.
+    //      E_POINTER - Parameter pdwDeviceCount is NULL.
+    //
+    [id(2), helpstring("method GetDeviceCount")]
+    HRESULT GetDeviceCount([out, annotation("__out")] DWORD* pdwDeviceCount);
+
+    //----------------------------------------------------------------------------
+    // Description:
+    //      Retrieves an OSR USB device that is identified by an ID value.
+    //
+    // Parameters:
+    //      dwDeviceId - [in] An OSR USB device ID to obtain.
+    //      ppDevice   - [out] A pointer to a pointer variable into which the method
+    //                   writes the address of the IOsrUsbDevice interface for
+    //                   the specified device. Through this method, the caller
+    //                   obtains a counted reference to the interface. The caller
+    //                   is responsible for releasing the interface, when it is no
+    //                   longer needed, by calling the interface's Release method.
+    //                   If the GetDevice call fails, *ppDevice is NULL.
+    //
+    // Return Values:
+    //      S_OK - The method succeeded.
+    //      E_POINTER - Parameter ppDevice is NULL.
+    //      E_NOTFOUND - The device ID does not identify an OSR USB device that is
+    //                   in this system.
+    //      E_OUTOFMEMORY - Out of memory.
+    //      E_ILLEGAL_METHOD_CALL - The GetDevice is called prior to the
+    //                              successful EnumerateDevices call.
+    //
+    [id(3), helpstring("method GetDeviceByIndex")]
+    HRESULT GetDeviceByIndex([in, annotation("__in")] DWORD dwDeviceId, [out, annotation("__out")] void** ppDevice);
+};
+
+// ---------------------------------------------------------------------
+//
+[
+    uuid(BCF29BE0-D6A8-4D78-A92C-4273CDABDA21),
+    version(1.0),
+    helpstring("OSR USB Device API 1.0 Type Library")
+]
+library OsrUsbApiDllLib
+{
+    importlib("stdole2.tlb");
+
+    //----------------------------------------------------------------------------
+    // OsrUsbDeviceEnumerator coclass
+    [
+        uuid(C3270517-8E73-4D3D-AE95-7C0788BC8296)
+    ]
+    coclass OsrUsbDeviceEnumerator
+    {
+        [default] interface IOsrUsbDeviceEnumerator;
+    };
+};
+
+
+#if defined(_MSC_VER) && (_MSC_VER >= 1700)
+cpp_quote("#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) */")
+#pragma endregion
+#endif /* defined(_MSC_VER) && (_MSC_VER >= 1700) */

@@ -1,0 +1,48 @@
+/*++
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Copyright (c) 2019 Bohdan Yevtukh. All rights reserved.
+
+Module Name:
+
+    targetver.h
+
+Abstract:
+
+    Include file for versioning Windows SDK.
+
+--*/
+
+#if !defined(TARGETVER_H__20C61BE4_4D0C_4485_BA66_54DB6B72DC5F__INCLUDED_)
+#define TARGETVER_H__20C61BE4_4D0C_4485_BA66_54DB6B72DC5F__INCLUDED_
+
+#if defined(_MSC_VER) && (_MSC_VER > 1000)
+#pragma once
+#endif /* defined(_MSC_VER) && (_MSC_VER > 1000) */
+
+//
+// By default minimum supported client is the Windows 7
+//
+
+#if !defined(_WIN32_WINNT)
+#define _WIN32_WINNT 0x0601 // _WIN32_WINNT_WIN7
+#endif /* !defined(_WIN32_WINNT) */
+
+#if !defined(WINVER)
+#define WINVER _WIN32_WINNT
+#endif /* !defined(WINVER) */
+
+#if !defined(_WIN32_IE)
+#define _WIN32_IE 0x0800 // _WIN32_IE_IE80
+#endif /* !defined(_WIN32_IE) */
+
+#include <SDKDDKVer.h>
+
+#endif /* !defined(TARGETVER_H__20C61BE4_4D0C_4485_BA66_54DB6B72DC5F__INCLUDED_) */
