@@ -16,7 +16,7 @@ Module Name:
 
 Abstract:
 
-    This module contains the type definitions for the COsrUsbApiModule class.
+    This module contains the type definitions for the CUsbApiModule class.
 
 --*/
 

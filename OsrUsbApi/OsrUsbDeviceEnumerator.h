@@ -16,7 +16,7 @@ Module Name:
 
 Abstract:
 
-    This module contains the type definitions for the COsrUsbDeviceEnumerator
+    This module contains the type definitions for the CUsbDeviceEnumerator
     class.
 
 --*/

@@ -16,7 +16,7 @@ Module Name:
 
 Abstract:
 
-    This module contains the implementation of the COsrUsbDeviceEnumerator
+    This module contains the implementation of the CUsbDeviceEnumerator
     object.
 
 --*/
