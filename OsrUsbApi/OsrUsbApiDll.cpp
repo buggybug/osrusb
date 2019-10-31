@@ -52,7 +52,7 @@ Abstract:
 // The base class CAtlDllModuleT provides all DLL COM server related routines
 // (see COsrUsbApiModule)
 //
-COsrUsbApiModule g_OsrUsbApiModule;
+OSR::CUsbApiModule g_Module;
 
 //+---------------------------------------------------------------------------
 //
@@ -118,7 +118,7 @@ extern "C" BOOL WINAPI DllMain(
     {
     }
 
-    bStatus = g_OsrUsbApiModule.DllMain(dwReason, pContext);
+    bStatus = g_Module.DllMain(dwReason, pContext);
 
     //
     // Perform an additional set of initialization steps if the DLL has been
@@ -187,7 +187,7 @@ __useHeader STDAPI DllCanUnloadNow(void) throw()
 
     OSR_LOG_TRACE("Entering %!FUNC!.");
 
-    hr = g_OsrUsbApiModule.DllCanUnloadNow();
+    hr = g_Module.DllCanUnloadNow();
 
     OSR_LOG_TRACE("Leaving %!FUNC!: %!HRESULT!.", hr);
 
@@ -222,7 +222,7 @@ __useHeader STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv) 
 
     OSR_LOG_TRACE("Entering %!FUNC!(%!CLSID!, %!IID!, 0x%p).", &rclsid, &riid, ppv);
 
-    hr = g_OsrUsbApiModule.DllGetClassObject(rclsid, riid, ppv);
+    hr = g_Module.DllGetClassObject(rclsid, riid, ppv);
 
     if (S_OK == hr)
     {
@@ -267,7 +267,7 @@ __useHeader STDAPI DllRegisterServer(void) throw()
     //
     // Registers object, typelib and all interfaces in typelib
     //
-    hr = g_OsrUsbApiModule.DllRegisterServer();
+    hr = g_Module.DllRegisterServer();
 
     OSR_LOG_TRACE("Leaving %!FUNC!: %!HRESULT!.", hr);
 
@@ -303,7 +303,7 @@ __useHeader STDAPI DllUnregisterServer(void) throw()
 
     OSR_LOG_TRACE("Entering %!FUNC!.");
 
-    hr = g_OsrUsbApiModule.DllUnregisterServer();
+    hr = g_Module.DllUnregisterServer();
 
     OSR_LOG_TRACE("Leaving %!FUNC!: %!HRESULT!.", hr);
 

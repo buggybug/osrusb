@@ -34,16 +34,20 @@ Abstract:
 
 #include <OsrUsbApiDll.h>
 
+namespace OSR {
+
 //
 // This class represents the module for a dynamic-link library (DLL) and
 // provides support for registration
 //
 
-class COsrUsbApiModule : public ATL::CAtlDllModuleT<COsrUsbApiModule>
+class CUsbApiModule : public ATL::CAtlDllModuleT<CUsbApiModule>
 {
 public:
     DECLARE_LIBID(LIBID_OsrUsbApiDllLib)
     DECLARE_REGISTRY_APPID_RESOURCEID(IDR_OSRUSBAPI_SERVER_REGISTRY, "{568B0689-D132-4541-A40E-3991E9E3214D}")
 };
+
+}; /* namespace OSR */
 
 #endif /* !defined(OSRUSBAPIMODULE_H__61348E54_67B6_48E1_A0F9_4AB07F315C4E__INCLUDED_) */
