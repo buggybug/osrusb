@@ -12,7 +12,7 @@ Copyright (c) 2019 Bohdan Yevtukh. All rights reserved.
 
 Module Name:
 
-    dllmain.cpp
+    OsrUsbApiDll.cpp
 
 Abstract:
 
