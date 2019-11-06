@@ -1,0 +1,230 @@
+;++
+;
+; THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+; IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+; FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+; AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+; LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+; SOFTWARE.
+;
+; Copyright (c) 2019 Bohdan Yevtukh. All rights reserved.
+;
+; Module Name:
+;
+;     OsrUsbFx2.inf
+;
+; Abstract:
+;
+;     INF file for installing the OSR USB FX-2 LK device driver.
+;
+;--
+
+;******************************************************************************
+; Version Section
+;------------------------------------------------------------------------------
+[Version]
+Signature="$Windows NT$"
+Class=USB
+ClassGuid={36fc9e60-c465-11cf-8056-444553540000}
+Provider=%S_Provider%
+DriverVer=06/08/2019,1.0.0.0
+CatalogFile=OsrUsbFx2.cat
+
+
+;******************************************************************************
+; Signature Attributes
+;------------------------------------------------------------------------------
+[SignatureAttributes]
+OsrUsbFx2.sys=SignatureAttributes.DRM
+
+[SignatureAttributes.DRM]
+DRMLevel=1300
+
+
+;******************************************************************************
+; Manufacturer
+;------------------------------------------------------------------------------
+[Manufacturer]
+%S_Mfg%=_Models,NT$ARCH$
+
+
+;******************************************************************************
+; Models Sections
+;------------------------------------------------------------------------------
+;
+; For Win2K
+;
+[_Models]
+; DisplayName  Section       DeviceId
+; -----------  -------       --------
+%S_DeviceDesc%=_Install,USB\VID_0547&PID_1002
+
+;
+; For XP and later
+;
+[_Models.NT$ARCH$]
+%S_DeviceDesc%=_Install,USB\VID_0547&PID_1002
+
+
+;******************************************************************************
+; Install Sections
+;------------------------------------------------------------------------------
+[_Install]
+CopyFiles=_CopyFiles
+
+[_Install.Services]
+AddService = %S_ServiceName%,%SPSVCINST_ASSOCSERVICE%,_AddService,_EventLog
+
+[_AddService]
+ServiceType=%SERVICE_KERNEL_DRIVER%
+StartType=%SERVICE_DEMAND_START%
+ErrorControl=%SERVICE_ERROR_NORMAL%
+ServiceBinary=%12%\OsrUsbFx2.sys
+
+[_EventLog]
+AddReg=_EventLogAddReg
+
+[_EventLogAddReg]
+HKR,,EventMessageFile,%REG_EXPAND_SZ%,"%11%\IoLogMsg.dll;%12%\OsrUsbFx2.sys"
+HKR,,TypesSupported,%REG_DWORD%,%EVENTLOG_SUPPORTED_TYPES%
+
+
+;******************************************************************************
+; Copy File Sections
+;------------------------------------------------------------------------------
+[_CopyFiles]
+OsrUsbFx2.sys,,,%COPYFLG_NOVERSIONCHECK%
+
+
+;******************************************************************************
+; Destination Directories
+;------------------------------------------------------------------------------
+[DestinationDirs]
+DefaultDestDir=12
+_CopyFiles=12
+
+
+;******************************************************************************
+; Disk Layout
+;------------------------------------------------------------------------------
+[SourceDisksNames]
+1=%S_DiskName%,,,
+
+[SourceDisksFiles]
+OsrUsbFx2.sys=1
+
+
+;******************************************************************************
+; Text Strings
+;------------------------------------------------------------------------------
+[Strings]
+;
+; Non-Localizable Strings, DO NOT MODIFY!
+;
+REG_SZ                                  = 0x00000000
+REG_MULTI_SZ                            = 0x00010000
+REG_EXPAND_SZ                           = 0x00020000
+REG_BINARY                              = 0x00000001
+REG_DWORD                               = 0x00010001
+
+
+; Flags that can be used to control how (or whether) a particular source file
+; is copied to the destination
+COPYFLG_WARN_IF_SKIP                    = 0x00000001
+COPYFLG_NOSKIP                          = 0x00000002
+COPYFLG_NOVERSIONCHECK                  = 0x00000004
+COPYFLG_FORCE_FILE_IN_USE               = 0x00000008
+COPYFLG_NO_OVERWRITE                    = 0x00000010
+COPYFLG_NO_VERSION_DIALOG               = 0x00000020
+COPYFLG_OVERWRITE_OLDER_ONLY            = 0x00000040
+COPYFLG_REPLACEONLY                     = 0x00000400
+COPYFLG_NODECOMP                        = 0x00000800
+COPYFLG_REPLACE_BOOT_FILE               = 0x00001000
+COPYFLG_NOPRUNE                         = 0x00002000
+COPYFLG_IN_USE_RENAME                   = 0x00004000
+
+
+; AddService directive related flags 
+SPSVCINST_TAGTOFRONT                    = 0x00000001
+SPSVCINST_ASSOCSERVICE                  = 0x00000002
+SPSVCINST_NOCLOBBER_DISPLAYNAME         = 0x00000008
+SPSVCINST_NOCLOBBER_STARTTYPE           = 0x00000010
+SPSVCINST_NOCLOBBER_ERRORCONTROL        = 0x00000020
+SPSVCINST_NOCLOBBER_LOADORDERGROUP      = 0x00000040
+SPSVCINST_NOCLOBBER_DEPENDENCIES        = 0x00000080
+SPSVCINST_NOCLOBBER_DESCRIPTION         = 0x00000100
+
+; For XP and later
+SPSVCINST_CLOBBER_SECURITY              = 0x00000400
+
+; For Vista and later
+SPSVCSINST_STARTSERVICE                 = 0x00000800
+
+; For Win7 and later
+SPSVCINST_NOCLOBBER_REQUIREDPRIVILEGES  = 0x00001000
+
+
+; The service type
+SERVICE_KERNEL_DRIVER                   = 0x00000001
+SERVICE_FILE_SYSTEM_DRIVER              = 0x00000002
+SERVICE_ADAPTER                         = 0x00000004
+SERVICE_RECOGNIZER_DRIVER               = 0x00000008
+SERVICE_WIN32_OWN_PROCESS               = 0x00000010
+SERVICE_WIN32_SHARE_PROCESS             = 0x00000020
+SERVICE_USER_OWN_PROCESS                = 0x00000050
+SERVICE_USER_SHARE_PROCESS              = 0x00000060
+
+; If SERVICE_WIN32_OWN_PROCESS or SERVICE_WIN32_SHARE_PROCESS is specified, and
+; the service is running in the context of the LocalSystem account
+SERVICE_INTERACTIVE_PROCESS             = 0x00000100
+
+; The service start options
+SERVICE_BOOT_START                      = 0x00000000
+SERVICE_SYSTEM_START                    = 0x00000001
+SERVICE_AUTO_START                      = 0x00000002
+SERVICE_DEMAND_START                    = 0x00000003
+SERVICE_DISABLED                        = 0x00000004
+
+; The severity of the error, and action taken, if the service fails to start
+SERVICE_ERROR_IGNORE                    = 0x00000000
+SERVICE_ERROR_NORMAL                    = 0x00000001
+SERVICE_ERROR_SEVERE                    = 0x00000002
+SERVICE_ERROR_CRITICAL                  = 0x00000003
+
+
+; Bitmask of supported types, this value is of type REG_DWORD
+EVENTLOG_ERROR_TYPE                     = 0x00000001
+EVENTLOG_WARNING_TYPE                   = 0x00000002
+EVENTLOG_INFORMATION_TYPE               = 0x00000004
+EVENTLOG_AUDIT_SUCCESS                  = 0x00000008
+EVENTLOG_AUDIT_FAILURE                  = 0x00000010
+
+; EVENTLOG_ERROR_TYPE|EVENTLOG_WARNING_TYPE|EVENTLOG_INFORMATION_TYPE
+EVENTLOG_SUPPORTED_TYPES                = 0x00000007
+
+
+;
+; Localizable Strings, modify as required
+;
+; Provider
+S_Provider="Bohdan Yevtukh"
+
+
+; Manufacturer
+S_Mfg="Bohdan Yevtukh"
+
+
+; Device Description
+S_DeviceDesc="OSR USB FX-2 LK"
+
+
+; Disk Name
+S_DiskName="OSR USB FX-2 LK Driver"
+
+
+; Service Name, should be set to x86 binary executable name without .sys extension
+S_ServiceName="OsrUsbFx2"
+
+
+;;;;;;;;;;;;;;;;;;;;;; EOF ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

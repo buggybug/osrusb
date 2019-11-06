@@ -1,0 +1,73 @@
+!IF 0
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Copyright (c) 2019 Bohdan Yevtukh. All rights reserved.
+
+Module Name:
+
+    sources.
+
+Abstract:
+
+    This file tells "build" how to build the OSR USB FX2 kernel mode driver.
+
+!ENDIF
+
+TARGETNAME=OsrUsbFx2
+TARGETTYPE=DRIVER
+
+INF_NAME=$(TARGETNAME)
+NTTARGETFILE0=$(OBJ_PATH)\$(O)\$(INF_NAME).inf
+
+PASS0_BINPLACE=$(NTTARGETFILE0)
+
+MSC_WARNING_LEVEL=/W4 /WX
+
+BUFFER_OVERFLOW_CHECKS=1
+
+COMMON_DIR = ..\OsrUsbCommon
+
+INCLUDES=\
+        $(DDK_INC_PATH);                     \
+        $(COMMON_DIR);                       \
+        $(OBJ_PATH)\$(O);
+
+SOURCES=\
+        OsrUsbFx2Driver.c                    \
+        OsrUsbFx2Logging.c
+
+#TARGETLIBS=\
+
+#
+# Comment the below line to disable tracing. All the debug traces
+# will be sent to the debugger.
+ENABLE_EVENT_TRACING=1
+
+!IFDEF ENABLE_EVENT_TRACING
+
+C_DEFINES = $(C_DEFINES) -DEVENT_TRACING
+
+WPP_CONFIG_FILE = $(COMMON_DIR)\OsrUsbLogging.h
+
+#
+# Generate WPP tracing code
+# $(SOURCES) -- run software preprocessor on files listed in SOURCES
+# -km        -- use kernel mode
+# -scan      -- set the file that should be scanned for a WPP config
+# -gen       -- specify the template file name and template message
+#               header file extension
+#
+RUN_WPP= $(SOURCES)                          \
+         -km                                 \
+         -scan:"$(WPP_CONFIG_FILE)"          \
+         -gen:{km-default.tpl}*.tmh
+
+
+!ENDIF
