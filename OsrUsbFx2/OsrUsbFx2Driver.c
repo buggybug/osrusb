@@ -26,6 +26,7 @@ Environment:
 
 #include "pch.h"
 #include "OsrUsbFx2Logging.h"
+#include "OsrUsbFx2Private.h"
 
 #if defined (EVENT_TRACING)
 //
@@ -94,6 +95,7 @@ Return Value:
         );
 
     DriverObject->DriverUnload = &OsrUsbFx2Unload;
+    DriverObject->DriverExtension->AddDevice = &OsrUsbFx2PnPAddDevice;
 
     return STATUS_SUCCESS;
 }
