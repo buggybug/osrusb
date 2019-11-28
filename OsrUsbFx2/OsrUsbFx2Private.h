@@ -52,6 +52,6 @@ typedef struct _OSRUSBFX2_DEVICE_EXTENSION {
 // referenced in the DriverEntry function but implemented in other modules
 //
 
-DRIVER_ADD_DEVICE OsrUsbFx2PnPAddDevice;
+DRIVER_ADD_DEVICE OsrUsbFx2_PnPAddDevice;
 
 #endif /* !defined (OSRUSBFX2PRIVATE_H__E8F9DC11_ABB6_475A_9266_4B535F7AA1E1__INCLUDED_) */

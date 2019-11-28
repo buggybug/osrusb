@@ -47,7 +47,7 @@ __checkReturn
 __drv_maxIRQL(PASSIVE_LEVEL)
 __drv_sameIRQL
 NTSTATUS
-OsrUsbFx2CreateDeviceObject (
+OsrUsbFx2_CreateDeviceObject (
     __in PDRIVER_OBJECT DriverObject,
     __in PDEVICE_OBJECT PhysicalDeviceObject
     );
@@ -57,13 +57,13 @@ OsrUsbFx2CreateDeviceObject (
 //
 
 #if defined (ALLOC_PRAGMA)
-#pragma alloc_text(PAGE, OsrUsbFx2PnPAddDevice)
-#pragma alloc_text(PAGE, OsrUsbFx2CreateDeviceObject)
+#pragma alloc_text(PAGE, OsrUsbFx2_PnPAddDevice)
+#pragma alloc_text(PAGE, OsrUsbFx2_CreateDeviceObject)
 #endif /* defined (ALLOC_PRAGMA) */
 
 __useHeader
 NTSTATUS
-OsrUsbFx2CreateDeviceObject (
+OsrUsbFx2_CreateDeviceObject (
     PDRIVER_OBJECT DriverObject,
     PDEVICE_OBJECT PhysicalDeviceObject
     )
@@ -217,7 +217,7 @@ Return Value:
 
 __useHeader
 NTSTATUS
-OsrUsbFx2PnPAddDevice (
+OsrUsbFx2_PnPAddDevice (
     PDRIVER_OBJECT DriverObject,
     PDEVICE_OBJECT PhysicalDeviceObject
     )
@@ -225,7 +225,7 @@ OsrUsbFx2PnPAddDevice (
 
 Routine Description:
 
-    OsrUsbFx2PnPAddDevice creates functional device objects (FDO) for OSR USB
+    OsrUsbFx2_PnPAddDevice creates functional device objects (FDO) for OSR USB
     FX-2 LK devices enumerated by the Plug and Play (PnP) manager.
 
 Arguments:
@@ -255,7 +255,7 @@ Return Value:
     //
     // Create the functional device object (FDO)
     //
-    Status = OsrUsbFx2CreateDeviceObject (
+    Status = OsrUsbFx2_CreateDeviceObject (
         DriverObject,
         PhysicalDeviceObject
         );

@@ -42,7 +42,7 @@ Environment:
 #endif /* defined (EVENT_TRACING) */
 
 DRIVER_INITIALIZE DriverEntry;
-DRIVER_UNLOAD OsrUsbFx2Unload;
+DRIVER_UNLOAD OsrUsbFx2_Unload;
 
 //
 // Define the sections that allow for discarding (i.e. paging) some of the code
@@ -50,7 +50,7 @@ DRIVER_UNLOAD OsrUsbFx2Unload;
 
 #if defined (ALLOC_PRAGMA)
 #pragma alloc_text(INIT, DriverEntry)
-#pragma alloc_text(PAGE, OsrUsbFx2Unload)
+#pragma alloc_text(PAGE, OsrUsbFx2_Unload)
 #endif /* defined (ALLOC_PRAGMA) */
 
 __useHeader
@@ -94,22 +94,22 @@ Return Value:
         RegistryPath
         );
 
-    DriverObject->DriverUnload = &OsrUsbFx2Unload;
-    DriverObject->DriverExtension->AddDevice = &OsrUsbFx2PnPAddDevice;
+    DriverObject->DriverUnload = &OsrUsbFx2_Unload;
+    DriverObject->DriverExtension->AddDevice = &OsrUsbFx2_PnPAddDevice;
 
     return STATUS_SUCCESS;
 }
 
 __useHeader
 VOID
-OsrUsbFx2Unload (
+OsrUsbFx2_Unload (
     PDRIVER_OBJECT DriverObject
     )
 /*++
 
 Routine Description:
 
-    OsrUsbFx2Unload routine performs any operations that are necessary before
+    OsrUsbFx2_Unload routine performs any operations that are necessary before
     the system unloads the driver.
 
 Arguments:
