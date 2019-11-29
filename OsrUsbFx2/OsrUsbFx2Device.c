@@ -49,7 +49,12 @@ __drv_sameIRQL
 NTSTATUS
 OsrUsbFx2_CreateDeviceObject (
     __in PDRIVER_OBJECT DriverObject,
-    __in PDEVICE_OBJECT PhysicalDeviceObject
+    __in PDEVICE_OBJECT PhysicalDeviceObject,
+    __out
+    __drv_out_deref(
+        __drv_allocatesMem(Mem)
+        __on_failure(__null))
+    PDEVICE_OBJECT *DeviceObject
     );
 
 //
@@ -65,7 +70,8 @@ __useHeader
 NTSTATUS
 OsrUsbFx2_CreateDeviceObject (
     PDRIVER_OBJECT DriverObject,
-    PDEVICE_OBJECT PhysicalDeviceObject
+    PDEVICE_OBJECT PhysicalDeviceObject,
+    PDEVICE_OBJECT *DeviceObject
     )
 /*++
 
@@ -84,6 +90,9 @@ Arguments:
     PhysicalDeviceObject - Caller-supplied pointer to a DEVICE_OBJECT structure
     representing a physical device object (PDO) created by a lower-level driver.
 
+    DeviceObject - Caller-supplied pointer to a variable that receives a pointer
+    to the newly created functional device object (FDO).
+
 Return Value:
 
     Various NTSTATUS codes.
@@ -91,13 +100,18 @@ Return Value:
 --*/
 {
     POSRUSBFX2_DEVICE_EXTENSION DeviceExtension;
-    PDEVICE_OBJECT DeviceObject;
+    PDEVICE_OBJECT TempDeviceObject;
     PDEVICE_OBJECT TopDeviceObject;
     UNICODE_STRING SymbolicLinkName;
     POWER_STATE PowerState;
     NTSTATUS Status;
 
     PAGED_CODE ();
+
+    //
+    // NULL indicates that no device object was created
+    //
+    *DeviceObject = (PDEVICE_OBJECT) NULL;
 
     //
     // Create the functional device object (FDO) and allocate device extension,
@@ -115,7 +129,7 @@ Return Value:
         FILE_DEVICE_UNKNOWN,
         FILE_DEVICE_SECURE_OPEN,
         FALSE,
-        &DeviceObject
+        &TempDeviceObject
         );
 
     if (!NT_SUCCESS (Status)) {
@@ -130,13 +144,13 @@ Return Value:
     // PoCallDriver when passing IRPs down the device stack
     //
 
-    TopDeviceObject = IoAttachDeviceToDeviceStack (DeviceObject, PhysicalDeviceObject);
+    TopDeviceObject = IoAttachDeviceToDeviceStack (TempDeviceObject, PhysicalDeviceObject);
 
     if (NULL == TopDeviceObject) {
         OSR_LOG_ERROR (
             "Failed to attach the device object to the highest device object in the chain."
             );
-        IoDeleteDevice (DeviceObject);
+        IoDeleteDevice (TempDeviceObject);
         return STATUS_NO_SUCH_DEVICE;
     }
 
@@ -155,11 +169,9 @@ Return Value:
     if (!NT_SUCCESS (Status)) {
         OSR_LOG_ERROR ("Failed to register a device interface class: %!STATUS!", Status);
         IoDetachDevice (TopDeviceObject);
-        IoDeleteDevice (DeviceObject);
+        IoDeleteDevice (TempDeviceObject);
         return Status;
     }
-
-    OSR_LOG_INFORMATION ("Successfully created the device object: 0x%p.", DeviceObject);
 
     //
     // Initialize the device object
@@ -170,13 +182,13 @@ Return Value:
     // Indicate that the driver is pageable, it allows the power manager to
     // call such driver at IRQL = PASSIVE_LEVEL
     //
-    DeviceObject->Flags |= DO_POWER_PAGABLE;
+    TempDeviceObject->Flags |= DO_POWER_PAGABLE;
 #else /* NTDDI_VERSION < NTDDI_VISTA */
     //
     // Prior to the Windows Vista, the operating system requires that all device
     // objects within a device stack have the same power-related flags set
     //
-    DeviceObject->Flags |= (TopDeviceObject->Flags &
+    TempDeviceObject->Flags |= (TopDeviceObject->Flags &
         (DO_POWER_INRUSH | DO_POWER_PAGABLE /* | DO_POWER_NOOP */));
 
     //
@@ -192,25 +204,21 @@ Return Value:
     // Set the initial power state of the device
     //
     PowerState.DeviceState = PowerDeviceD3;
-    PoSetPowerState (DeviceObject, DevicePowerState, PowerState);
+    PoSetPowerState (TempDeviceObject, DevicePowerState, PowerState);
 
     //
     // Initialize the device extension
     //
 
-    DeviceExtension = DeviceObject->DeviceExtension;
+    DeviceExtension = TempDeviceObject->DeviceExtension;
 
     DeviceExtension->PhysicalDeviceObject = PhysicalDeviceObject;
 
     //
-    // The purpose of DO_DEVICE_INITIALIZING is to prevent other components from
-    // sending I/O to a device before the driver has finished initializing the
-    // device object
+    // The device object was successfully created and initialized, so assign
+    // an output pointer
     //
-    // N.B. Do not clear this flag until the driver has set the device power
-    //      state and the power DO flags. 
-    //
-    DeviceObject->Flags &= ~DO_DEVICE_INITIALIZING;
+    *DeviceObject = TempDeviceObject;
 
     return STATUS_SUCCESS;
 }
@@ -242,6 +250,7 @@ Return Value:
 
 --*/
 {
+    PDEVICE_OBJECT DeviceObject;
     NTSTATUS Status;
 
     PAGED_CODE ();
@@ -257,8 +266,23 @@ Return Value:
     //
     Status = OsrUsbFx2_CreateDeviceObject (
         DriverObject,
-        PhysicalDeviceObject
+        PhysicalDeviceObject,
+        &DeviceObject
         );
+
+    if (NT_SUCCESS (Status)) {
+        //
+        // The purpose of DO_DEVICE_INITIALIZING is to prevent other components
+        // from sending I/O to a device before the driver has finished
+        // initializing the device object
+        //
+        // N.B. Do not clear this flag until the driver has set the device power
+        //      state and the power DO flags
+        //
+        DeviceObject->Flags &= ~DO_DEVICE_INITIALIZING;
+
+        OSR_LOG_INFORMATION ("Successfully created the device object: 0x%p.", DeviceObject);
+    }
 
     OSR_LOG_TRACE ("Leaving %!FUNC!: %!STATUS!.", Status);
 
