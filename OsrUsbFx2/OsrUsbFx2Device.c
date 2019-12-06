@@ -91,7 +91,7 @@ Arguments:
     representing a physical device object (PDO) created by a lower-level driver.
 
     DeviceObject - Caller-supplied pointer to a variable that receives a pointer
-    to the newly created functional device object (FDO).
+    to the newly created function device object (FDO).
 
 Return Value:
 
@@ -114,7 +114,7 @@ Return Value:
     *DeviceObject = (PDEVICE_OBJECT) NULL;
 
     //
-    // Create the functional device object (FDO) and allocate device extension,
+    // Create the function device object (FDO) and allocate device extension,
     // i.e. the driver-defined internal structure, to store the OSR USB FX-2 LK
     // device driver specific data
     //
@@ -233,7 +233,7 @@ OsrUsbFx2_PnPAddDevice (
 
 Routine Description:
 
-    OsrUsbFx2_PnPAddDevice creates functional device objects (FDO) for OSR USB
+    OsrUsbFx2_PnPAddDevice creates function device objects (FDO) for OSR USB
     FX-2 LK devices enumerated by the Plug and Play (PnP) manager.
 
 Arguments:
@@ -262,7 +262,7 @@ Return Value:
         );
 
     //
-    // Create the functional device object (FDO)
+    // Create the function device object (FDO)
     //
     status = OsrUsbFx2_CreateDeviceObject (
         DriverObject,
