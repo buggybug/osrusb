@@ -149,7 +149,7 @@ Return Value:
 
 --*/
 {
-    volatile CONST PVOID ReturnAddress = _ReturnAddress ();
+    volatile CONST PVOID returnAddress = _ReturnAddress ();
 
     //
     // This routine is called from the OSR_CRTITICAL_ASSERT, i.e. there is no
@@ -168,7 +168,7 @@ Return Value:
 
     KeBugCheckEx (
         BUGCODE_ID_DRIVER,
-        (ULONG_PTR)ReturnAddress,
+        (ULONG_PTR) returnAddress,
         Level,
         0,
         0
@@ -217,7 +217,7 @@ Return Value:
     //
     // Tracing level description table, each level is directly mapped by its value
     //
-    static PCSTR LevelDescription[] = {
+    static PCSTR levelDescription[] = {
         "[%s]",                         // TRACE_LEVEL_NONE
         "critical error",               // TRACE_LEVEL_CRITICAL
         "error",                        // TRACE_LEVEL_ERROR
@@ -226,17 +226,17 @@ Return Value:
         "trace"                         // TRACE_LEVEL_VERBOSE
     };
 
-    volatile CONST PVOID ReturnAddress = _ReturnAddress ();
+    volatile CONST PVOID returnAddress = _ReturnAddress ();
 
     //
     // Find a corresponding debug event description string in the level
     // description array
     //
-    CONST PCSTR LevelString = LevelDescription[
-        Level < ARRAYSIZE(LevelDescription) ? Level : 0];
+    CONST PCSTR levelString = levelDescription[
+        Level < ARRAYSIZE(levelDescription) ? Level : 0];
 
-    CHAR ResponseBuffer[2];   
-    BOOLEAN ContinueLoop = TRUE;
+    CHAR responseBuffer[2];
+    BOOLEAN continueLoop = TRUE;
 
     //
     // Don't waste time if there is no kernel debugger currently attached
@@ -255,19 +255,19 @@ Return Value:
         DPFLTR_DEFAULT_ID,
         DPFLTR_ERROR_LEVEL,
         OSR_USB_FX_2_LOGGING_NAME " %s event occured at 0x%p.\n",
-        LevelString,
-        ReturnAddress
+        levelString,
+        returnAddress
         );
 
     //
     // Ask if the user wants to break an execution to inspect the current state or
     // ignore a debug event and continue 
     //
-    while (ContinueLoop) {
+    while (continueLoop) {
         DbgPrompt (
             "Debug event occured. Do you want to break (y[Y] - break, n[N] - ignore)? ",
-            ResponseBuffer,
-            ARRAYSIZE(ResponseBuffer)
+            responseBuffer,
+            ARRAYSIZE(responseBuffer)
             );
 
         //
@@ -278,12 +278,12 @@ Return Value:
         // Perform a case insensitive comparison of a first character, a second
         // one is supposed to be a new line character and can be ignored anyway
         //
-        if ('Y' == (ResponseBuffer[0] & ~0x20)) {
+        if ('Y' == (responseBuffer[0] & ~0x20)) {
             DbgBreakPoint ();
-            ContinueLoop = FALSE;
+            continueLoop = FALSE;
         }
-        else if ('N' == (ResponseBuffer[0] & ~0x20)) {
-            ContinueLoop = FALSE;
+        else if ('N' == (responseBuffer[0] & ~0x20)) {
+            continueLoop = FALSE;
         }
     }
 
@@ -314,7 +314,7 @@ Return Value:
 --*/
 {
 #if (NTDDI_VERSION >= NTDDI_WS03)
-    static BOOLEAN DebuggerPresenceInitialized = FALSE;
+    static BOOLEAN debuggerPresenceInitialized = FALSE;
 
     //
     // Thread unsafe, yet disregardable. May refresh debugger status global
@@ -323,9 +323,9 @@ Return Value:
     // but in order to reduce the number of conditional branches just use the
     // KD_DEBUGGER_NOT_PRESENT variable directly.
     //
-    if (!DebuggerPresenceInitialized) {
+    if (!debuggerPresenceInitialized) {
         KdRefreshDebuggerNotPresent ();
-        DebuggerPresenceInitialized = TRUE;
+        debuggerPresenceInitialized = TRUE;
     }
     else if (Refresh) {
         KdRefreshDebuggerNotPresent ();
