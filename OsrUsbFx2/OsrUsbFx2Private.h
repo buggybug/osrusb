@@ -115,6 +115,12 @@ extern OSRUSBFX2_DRIVER_GLOBALS OsrUsbFx2_DriverGlobals;
 typedef struct _OSRUSBFX2_DEVICE_EXTENSION {
 
     //
+    // N.B. Do not provide a pointer to the function device object (FDO),
+    //      because the device extension structure is always obtained from
+    //      the device object and never used as a standalone structure
+    //
+
+    //
     // The device object created by a lower-level driver (bus driver object)
     //
     PDEVICE_OBJECT PhysicalDeviceObject;
