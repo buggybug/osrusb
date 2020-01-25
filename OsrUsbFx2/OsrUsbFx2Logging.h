@@ -57,6 +57,21 @@ OSR_LOG_CLEANUP (
     __in PDRIVER_OBJECT DriverObject
     );
 
+__drv_requiresIRQL(PASSIVE_LEVEL)
+__drv_sameIRQL
+VOID
+OSR_LOG_INIT_WIN2K (
+    __in PDEVICE_OBJECT DeviceObject,
+    __in PUNICODE_STRING RegistryPath
+    );
+
+__drv_requiresIRQL(PASSIVE_LEVEL)
+__drv_sameIRQL
+VOID
+OSR_LOG_CLEANUP_WIN2K (
+    __in PDEVICE_OBJECT DeviceObject
+    );
+
 //
 // If software tracing is defined in the sources file WPP_DEFINE_CONTROL_GUID
 // specifies the GUID used for this driver

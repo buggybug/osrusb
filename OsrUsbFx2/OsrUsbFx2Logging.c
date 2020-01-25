@@ -27,6 +27,7 @@ Environment:
 
 #include "pch.h"
 #include "OsrUsbFx2Logging.h"
+#include "OsrUsbFx2Private.h"
 #include <rtcapi.h>
 
 #if defined (EVENT_TRACING)
@@ -43,12 +44,45 @@ Environment:
 #endif /* defined (_MSC_VER) && (_MSC_VER >= 1300) */
 
 //
+// Internal tracing routines declarations
+//
+
+//
+// The WPP preprocessor will not tolerate the WPP_INIT_TRACING macro being in
+// more than one module even if it is conditionally compiled out of one of the
+// modules. So, calling WPP_INIT_TRACING in the DriverEntry in one module if
+// compiling for XP and later, and call WPP_INIT_TRACING in the PnP module if
+// compiling for Windows 2000, the compiler will report errors due to multiple
+// definitions. The only solution is to add a separate module that exports
+// functions that call the macros
+//
+
+__drv_requiresIRQL(PASSIVE_LEVEL)
+__drv_sameIRQL
+VOID
+OsrLogInit (
+    __in PVOID ProviderObject,
+    __in PUNICODE_STRING RegistryPath
+    );
+
+__drv_requiresIRQL(PASSIVE_LEVEL)
+__drv_sameIRQL
+VOID
+OsrLogCleanup (
+    __in PVOID ProviderObject
+    );
+
+//
 // Define the sections that allow for discarding (i.e. paging) some of the code
 //
 
 #if defined (ALLOC_PRAGMA)
 #pragma alloc_text(INIT, OSR_LOG_INIT)
+#pragma alloc_text(PAGE, OSR_LOG_INIT_WIN2K)
 #pragma alloc_text(PAGE, OSR_LOG_CLEANUP)
+#pragma alloc_text(PAGE, OSR_LOG_CLEANUP_WIN2K)
+#pragma alloc_text(PAGE, OsrLogInit)
+#pragma alloc_text(PAGE, OsrLogCleanup)
 #endif /* defined (ALLOC_PRAGMA) */
 
 //
@@ -76,25 +110,16 @@ OSR_LOG_INIT (
 
 Routine Description:
 
-    Registers the provider GUID and initializes the structures that are needed
-    for software tracing in a kernel-mode driver.
-
-Arguments:
-
-    DriverObject - A pointer to the driver object that represents the driver.
-
-    RegistryPath - A pointer to a Unicode string that specifies the path to the
-    driver's registry key.
-
-Return Value:
-
-    None.
+    Initializes Windows software trace preprocessor (WPP) tracing on Windows XP
+    and later. OsrLogInit wrapper.
 
 --*/
 {
     PAGED_CODE ();
 
-    WPP_INIT_TRACING (DriverObject, RegistryPath);
+    OsrLogInit (DriverObject, RegistryPath);
+
+    return;
 }
 
 __useHeader
@@ -106,22 +131,59 @@ OSR_LOG_CLEANUP (
 
 Routine Description:
 
-    Unregister the provider that was registered by calling OSR_LOG_INIT and
-    deactivates software tracing in a kernel-mode driver.
-
-Arguments:
-
-    DriverObject - A pointer to the driver object that represents the driver.
-
-Return Value:
-
-    None.
+    Deactivates Windows software trace preprocessor (WPP) tracing on Windows XP
+    and later. OsrLogCleanup wrapper.
 
 --*/
 {
     PAGED_CODE ();
 
-    WPP_CLEANUP (DriverObject);
+    OsrLogCleanup (DriverObject);
+
+    return;
+}
+
+__useHeader
+VOID
+OSR_LOG_INIT_WIN2K (
+    PDEVICE_OBJECT DeviceObject,
+    PUNICODE_STRING RegistryPath
+    )
+/*++
+
+Routine Description:
+
+    Initializes Windows software trace preprocessor (WPP) tracing on Windows 2000.
+    OsrLogInit wrapper.
+
+--*/
+{
+    PAGED_CODE ();
+
+    OsrLogInit (DeviceObject, RegistryPath);
+
+    return;
+}
+
+__useHeader
+VOID
+OSR_LOG_CLEANUP_WIN2K (
+    PDEVICE_OBJECT DeviceObject
+    )
+/*++
+
+Routine Description:
+
+    Deactivates Windows software trace preprocessor (WPP) tracing on Windows 2000.
+    OsrLogCleanup wrapper.
+
+--*/
+{
+    PAGED_CODE ();
+
+    OsrLogCleanup (DeviceObject);
+
+    return;
 }
 
 __useHeader
@@ -315,23 +377,97 @@ Return Value:
 {
 #if (NTDDI_VERSION >= NTDDI_WS03)
     static BOOLEAN debuggerPresenceInitialized = FALSE;
+    POSRUSBFX2_DRIVER_GLOBALS driverGlobals;
+    POSR_SYSTEM_ROUTINE_TABLE systemRoutineTable;
 
-    //
-    // Thread unsafe, yet disregardable. May refresh debugger status global
-    // variable several times. Much more efficient than atomic test and set.
-    // KdRefreshDebuggerNotPresent returns !KD_DEBUGGER_NOT_PRESENT value,
-    // but in order to reduce the number of conditional branches just use the
-    // KD_DEBUGGER_NOT_PRESENT variable directly.
-    //
-    if (!debuggerPresenceInitialized) {
-        KdRefreshDebuggerNotPresent ();
-        debuggerPresenceInitialized = TRUE;
-    }
-    else if (Refresh) {
-        KdRefreshDebuggerNotPresent ();
+    driverGlobals = OSRUSBFX2_GET_DRIVER_GLOBALS ();
+    systemRoutineTable = &driverGlobals->SystemRoutineTable;
+
+    if (NULL != systemRoutineTable->KdRefreshDebuggerNotPresent) {
+        //
+        // Thread unsafe, yet disregardable. May refresh debugger status global
+        // variable several times. Much more efficient than atomic test and set.
+        // KdRefreshDebuggerNotPresent returns !KD_DEBUGGER_NOT_PRESENT value,
+        // but in order to reduce the number of conditional branches just use the
+        // KD_DEBUGGER_NOT_PRESENT variable directly.
+        //
+        if (!debuggerPresenceInitialized) {
+            systemRoutineTable->KdRefreshDebuggerNotPresent ();
+            debuggerPresenceInitialized = TRUE;
+        }
+        else if (Refresh) {
+            systemRoutineTable->KdRefreshDebuggerNotPresent ();
+        }
     }
 #endif /* NTDDI_VERSION >= NTDDI_WS03 */
     UNREFERENCED_PARAMETER (Refresh);
 
     return KD_DEBUGGER_ENABLED && !KD_DEBUGGER_NOT_PRESENT;
+}
+
+__useHeader
+VOID
+OsrLogInit (
+    PVOID ProviderObject,
+    PUNICODE_STRING RegistryPath
+    )
+/*++
+
+Routine Description:
+
+    Registers the provider GUID and initializes the structures that are needed
+    for software tracing in a kernel-mode driver.
+
+Arguments:
+
+    ProviderObject - A pointer to a tracing provider object. Starting with
+    Windows XP, if the driver is not using Inflight Trace Recorder (IFR), this
+    parameter is not used and can be set to NULL.
+
+    RegistryPath - A pointer to a Unicode string that specifies the path to the
+    driver's registry key. Starting with Windows XP, if the driver is not using
+    Inflight Trace Recorder (IFR), this parameter is not used and can be set to NULL.
+
+Return Value:
+
+    None.
+
+--*/
+{
+    PAGED_CODE ();
+
+    WPP_INIT_TRACING (ProviderObject, RegistryPath);
+
+    return;
+}
+
+__useHeader
+VOID
+OsrLogCleanup (
+    PVOID ProviderObject
+    )
+/*++
+
+Routine Description:
+
+    Unregisters the provider that was registered by calling OSR_LOG_INIT and
+    deactivates software tracing in a kernel-mode driver.
+
+Arguments:
+
+    ProviderObject - A pointer to a tracing provider object. Starting with
+    Windows XP, if the driver is not using Inflight Trace Recorder (IFR), this
+    parameter is not used and can be set to NULL.
+
+Return Value:
+
+    None.
+
+--*/
+{
+    PAGED_CODE ();
+
+    WPP_CLEANUP (ProviderObject);
+
+    return;
 }

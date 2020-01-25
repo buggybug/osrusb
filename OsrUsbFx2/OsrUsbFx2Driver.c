@@ -41,6 +41,59 @@ Environment:
 #include "OsrUsbFx2Driver.tmh"
 #endif /* defined (EVENT_TRACING) */
 
+#if (NTDDI_VERSION >= NTDDI_WS03)
+
+#define OSR_SYSTEM_ROUTINE_TABLE_STRING_PREFIX  SystemRoutineName_
+
+//
+// This macro returns a preprocessor token that represents a wide char string
+// buffer constant name's prefix
+//
+#define OSR_GET_SYSTEN_ROUTINE_STRING_PREFIX()  OSR_SYSTEM_ROUTINE_TABLE_STRING_PREFIX
+
+#define OSR_DECLARE_SYSTEM_ROUTINE_STRING(X)  \
+    WCHAR OSR_GET_SYSTEN_ROUTINE_STRING_PREFIX() ## X ## [] = L ## #X
+
+//
+// This macro builds the UNICODE_STRING initialization list using a statically
+// allocated Unicode character array that is specified in an input parameter
+//
+#define OSR_SYSTEM_ROUTINE_STRING_INITIALIZATION_LIST(X)  \
+    { (sizeof(X) - sizeof((X)[0])), sizeof(X), (X) }
+
+#define OSR_DECLARE_SYSTEM_ROUTINE_TABLE_ENTRY(X)  \
+    OSR_SYSTEM_ROUTINE_STRING_INITIALIZATION_LIST(OSR_GET_SYSTEN_ROUTINE_STRING_PREFIX() ## X)
+
+//
+// Define the data section that will be discarded after DriverEntry returns
+//
+#if defined (ALLOC_DATA_PRAGMA)
+#pragma data_seg(push, init_data, "INITDATA")
+#endif /* defined (ALLOC_DATA_PRAGMA) */
+
+OSR_DECLARE_SYSTEM_ROUTINE_STRING (KdRefreshDebuggerNotPresent);
+
+//
+// Device driver interface (DDI) version dependent function pointer table
+//
+// N.B. An order of this table's entries has to much an order of the
+//      OSR_SYSTEM_ROUTINE_TABLE structure fields
+//
+
+UNICODE_STRING OsrUsbFx2_SystemImportRoutineTable[] = {
+
+    OSR_DECLARE_SYSTEM_ROUTINE_TABLE_ENTRY (KdRefreshDebuggerNotPresent)
+
+};
+
+#if defined (ALLOC_DATA_PRAGMA)
+#pragma data_seg(pop, init_data)
+#endif /* defined (ALLOC_DATA_PRAGMA) */
+
+#endif /* NTDDI_VERSION >= NTDDI_WS03 */
+
+OSRUSBFX2_DRIVER_GLOBALS OsrUsbFx2_DriverGlobals;
+
 DRIVER_INITIALIZE DriverEntry;
 DRIVER_UNLOAD OsrUsbFx2_Unload;
 
@@ -85,7 +138,27 @@ Return Value:
 
 --*/
 {
-    OSR_LOG_INIT (DriverObject, RegistryPath);
+    POSRUSBFX2_DRIVER_GLOBALS driverGlobals;
+    PVOID *systemRoutineTable;
+    PUNICODE_STRING registryPath;
+    PWCH registryPathBuffer;
+    ULONG systemImportRoutineTableSize;
+    ULONG i;
+    USHORT registryPathBufferSize;
+
+#if defined (EVENT_TRACING)
+    //
+    // On Windowx XP and later, initialize the WPP software tracing by passing
+    // the incoming DriverObject and RegistryPath parameters to the OSR_LOG_INIT
+    // routine. Windows 2000 requires the function device object (FDO), therefore
+    // the OSR_LOG_INIT_WIN2K function is called from the device start routine,
+    // i.e. when processing IRP_MN_START_DEVICE
+    //
+    WppLoadTracingSupport ();
+    if (WppTraceWin2K != WPPTraceSuite) {
+        OSR_LOG_INIT (DriverObject, RegistryPath);
+    }
+#endif /* defined (EVENT_TRACING) */
 
     OSR_LOG_INFORMATION (
         "Initializing %s with parameters: DriverObject=0x%p, RegistryPath=%wZ.",
@@ -93,6 +166,69 @@ Return Value:
         DriverObject,
         RegistryPath
         );
+
+    driverGlobals = OSRUSBFX2_GET_DRIVER_GLOBALS ();
+
+    //
+    // Initialize the driver's global data
+    //
+
+    //
+    // Save a copy of the Unicode string that represents the driver specific path
+    // in the Registry, nor the pointer, since the I/O manager frees the string
+    // buffer after this routine returns
+    //
+
+    registryPathBufferSize = RegistryPath->Length + sizeof(UNICODE_NULL);
+
+    registryPathBuffer = ExAllocatePoolWithTag (
+        PagedPool,
+        registryPathBufferSize,
+        OSRUSBFX2_POOL_TAG
+        );
+
+    if (NULL == registryPathBuffer) {
+        OSR_LOG_ERROR (
+            "Failed to allocate a paged buffer of %u bytes.",
+            registryPathBufferSize
+            );
+        return STATUS_INSUFFICIENT_RESOURCES;
+    }
+
+    registryPath = &driverGlobals->RegistryPath;
+
+    registryPath->MaximumLength = registryPathBufferSize;
+    registryPath->Length = RegistryPath->Length;
+    registryPath->Buffer = registryPathBuffer;
+
+    RtlCopyUnicodeString (registryPath, RegistryPath);
+
+#if (NTDDI_VERSION >= NTDDI_WS03)
+    //
+    // The NTDDI_VERSION stands for the maximum supported Microsoft Windows device
+    // driver interface (DDI) version, so it may be efficient to remove meaningless
+    // MmGetSystemRoutineAddress calls by using the RtlIsNtDdiVersionAvailable
+    // routine to determine current DDI version, yet the performance penalty is
+    // disregardable as the system routine table is initialized only once
+    //
+
+    systemRoutineTable = (PVOID*) &driverGlobals->SystemRoutineTable;
+    systemImportRoutineTableSize = ARRAYSIZE (OsrUsbFx2_SystemImportRoutineTable);
+
+    for (i = 0; i < systemImportRoutineTableSize; ++i) {
+
+        systemRoutineTable[i] = MmGetSystemRoutineAddress (
+            &OsrUsbFx2_SystemImportRoutineTable[i]
+            );
+    }
+#endif /* NTDDI_VERSION >= NTDDI_WS03 */
+    UNREFERENCED_PARAMETER (systemRoutineTable);
+    UNREFERENCED_PARAMETER (systemImportRoutineTableSize);
+    UNREFERENCED_PARAMETER (i);
+
+    //
+    // Supply entry points for the standard driver's routines
+    //
 
     DriverObject->DriverUnload = &OsrUsbFx2_Unload;
     DriverObject->DriverExtension->AddDevice = &OsrUsbFx2_PnPAddDevice;
@@ -123,6 +259,9 @@ Return Value:
 
 --*/
 {
+    POSRUSBFX2_DRIVER_GLOBALS driverGlobals;
+    PUNICODE_STRING registryPath;
+
     PAGED_CODE ();
 
     OSR_LOG_INFORMATION (
@@ -131,5 +270,38 @@ Return Value:
         DriverObject
         );
 
-    OSR_LOG_CLEANUP (DriverObject);
+    ASSERT (NULL == DriverObject->DeviceObject);
+
+    driverGlobals = OSRUSBFX2_GET_DRIVER_GLOBALS ();
+
+    //
+    // Deallocate driver-wide resources that were previously allocated in the
+    // DriverEntry routine. This operation is synchronous and can be called only
+    // after the DriverEntry returns a STATUS_SUCCESS code, otherwise the I/O
+    // manager simply frees the memory space taken up by the driver
+    //
+
+    //
+    // Free the Unicode string representing the path to driver specific key in
+    // the Registry. The buffer is guaranteed to be valid
+    //
+
+    registryPath = &driverGlobals->RegistryPath;
+
+    ASSERT (NULL != registryPath->Buffer);
+    ExFreePoolWithTag (registryPath->Buffer, OSRUSBFX2_POOL_TAG);
+
+#if defined (EVENT_TRACING)
+    //
+    // On Windows XP and later, deactivate WPP software tracing by passing the
+    // DriverObject to the OSR_LOG_CLEANUP routine. On Windows 2000, deactivate
+    // WPP software tracing by passing the function device object (FDO) to the
+    // OSR_LOG_CLEANUP_WIN2K function when processing IRP_MN_REMOVE_DEVICE
+    //
+    if (WppTraceWin2K != WPPTraceSuite) {
+        OSR_LOG_CLEANUP (DriverObject);
+    }
+#endif /* defined (EVENT_TRACING) */
+
+    return;
 }
