@@ -162,7 +162,7 @@ Return Value:
 
     OSR_LOG_INFORMATION (
         "Initializing %s with parameters: DriverObject=0x%p, RegistryPath=%wZ.",
-        OSR_USB_FX_2_LOGGING_NAME,
+        OSRUSBFX2_LOGGING_NAME,
         DriverObject,
         RegistryPath
         );
@@ -266,7 +266,7 @@ Return Value:
 
     OSR_LOG_INFORMATION (
         "Unloading driver %s: DriverObject=0x%p.",
-        OSR_USB_FX_2_LOGGING_NAME,
+        OSRUSBFX2_LOGGING_NAME,
         DriverObject
         );
 

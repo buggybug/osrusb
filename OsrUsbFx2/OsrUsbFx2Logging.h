@@ -34,7 +34,7 @@ Environment:
 #pragma once
 #endif /* defined(_MSC_VER) && (_MSC_VER > 1000) */
 
-#define OSR_USB_FX_2_LOGGING_NAME "OsrUsbFx2"
+#define OSRUSBFX2_LOGGING_NAME "OsrUsbFx2"
 
 #define WPP_CHECK_FOR_NULL_STRING  // To prevent exceptions due to NULL strings
 
