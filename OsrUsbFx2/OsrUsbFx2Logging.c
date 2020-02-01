@@ -316,7 +316,7 @@ Return Value:
     DbgPrintEx (
         DPFLTR_DEFAULT_ID,
         DPFLTR_ERROR_LEVEL,
-        OSR_USB_FX_2_LOGGING_NAME " %s event occured at 0x%p.\n",
+        OSRUSBFX2_LOGGING_NAME " %s event occured at 0x%p.\n",
         levelString,
         returnAddress
         );
