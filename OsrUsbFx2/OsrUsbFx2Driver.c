@@ -43,16 +43,14 @@ Environment:
 
 #if (NTDDI_VERSION >= NTDDI_WS03)
 
-#define OSR_SYSTEM_ROUTINE_TABLE_STRING_PREFIX  SystemRoutineName_
-
 //
 // This macro returns a preprocessor token that represents a wide char string
-// buffer constant name's prefix
+// buffer constant name
 //
-#define OSR_GET_SYSTEN_ROUTINE_STRING_PREFIX()  OSR_SYSTEM_ROUTINE_TABLE_STRING_PREFIX
+#define OSR_GET_SYSTEN_ROUTINE_STRING_NAME(X)  SystemRoutineName_ ## X
 
 #define OSR_DECLARE_SYSTEM_ROUTINE_STRING(X)  \
-    WCHAR OSR_GET_SYSTEN_ROUTINE_STRING_PREFIX() ## X ## [] = L ## #X
+    WCHAR OSR_GET_SYSTEN_ROUTINE_STRING_NAME(X)[] = L ## #X
 
 //
 // This macro builds the UNICODE_STRING initialization list using a statically
@@ -62,7 +60,7 @@ Environment:
     { (sizeof(X) - sizeof((X)[0])), sizeof(X), (X) }
 
 #define OSR_DECLARE_SYSTEM_ROUTINE_TABLE_ENTRY(X)  \
-    OSR_SYSTEM_ROUTINE_STRING_INITIALIZATION_LIST(OSR_GET_SYSTEN_ROUTINE_STRING_PREFIX() ## X)
+    OSR_SYSTEM_ROUTINE_STRING_INITIALIZATION_LIST(OSR_GET_SYSTEN_ROUTINE_STRING_NAME(X))
 
 //
 // Define the data section that will be discarded after DriverEntry returns
