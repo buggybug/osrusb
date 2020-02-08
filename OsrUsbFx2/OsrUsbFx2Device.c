@@ -213,6 +213,7 @@ Return Value:
 
     deviceExtension = deviceObject->DeviceExtension;
 
+    deviceExtension->TopDeviceObject = topDeviceObject;
     deviceExtension->PhysicalDeviceObject = PhysicalDeviceObject;
 
     //

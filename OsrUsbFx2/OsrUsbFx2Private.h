@@ -121,6 +121,11 @@ typedef struct _OSRUSBFX2_DEVICE_EXTENSION {
     //
 
     //
+    // The device object at the top of the stack that the FDO attached to
+    //
+    PDEVICE_OBJECT TopDeviceObject;
+
+    //
     // The device object created by a lower-level driver (bus driver object)
     //
     PDEVICE_OBJECT PhysicalDeviceObject;
