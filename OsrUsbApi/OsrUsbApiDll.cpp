@@ -12,7 +12,7 @@ Copyright (c) 2019 Bohdan Yevtukh. All rights reserved.
 
 Module Name:
 
-    dllmain.cpp
+    OsrUsbApiDll.cpp
 
 Abstract:
 
@@ -52,7 +52,7 @@ Abstract:
 // The base class CAtlDllModuleT provides all DLL COM server related routines
 // (see COsrUsbApiModule)
 //
-COsrUsbApiModule g_OsrUsbApiModule;
+OSR::CUsbApiModule g_Module;
 
 //+---------------------------------------------------------------------------
 //
@@ -99,9 +99,9 @@ extern "C" BOOL WINAPI DllMain(
         //
         // Initialize WPP tracing on DLL module load
         //
-        WPP_INIT_TRACING(_CRT_WIDE(OSR_USB_API_LOGGING_NAME));
+        WPP_INIT_TRACING(_CRT_WIDE(OSRUSBAPI_LOGGING_NAME));
 
-        OSR_LOG_TRACE("%s module was loaded.", OSR_USB_API_LOGGING_NAME);
+        OSR_LOG_INFORMATION("%s module was loaded.", OSRUSBAPI_LOGGING_NAME);
     }
 
     //
@@ -118,7 +118,7 @@ extern "C" BOOL WINAPI DllMain(
     {
     }
 
-    bStatus = g_OsrUsbApiModule.DllMain(dwReason, pContext);
+    bStatus = g_Module.DllMain(dwReason, pContext);
 
     //
     // Perform an additional set of initialization steps if the DLL has been
@@ -154,7 +154,7 @@ extern "C" BOOL WINAPI DllMain(
 
     if (DLL_PROCESS_DETACH == dwReason || DLL_PROCESS_ATTACH == dwReason && !bStatus)
     {
-        OSR_LOG_TRACE("%s module was unloaded.", OSR_USB_API_LOGGING_NAME);
+        OSR_LOG_INFORMATION("%s module was unloaded.", OSRUSBAPI_LOGGING_NAME);
 
         //
         // Cleanup tracing on module unload or on failed attempt to load DLL,
@@ -187,7 +187,7 @@ __useHeader STDAPI DllCanUnloadNow(void) throw()
 
     OSR_LOG_TRACE("Entering %!FUNC!.");
 
-    hr = g_OsrUsbApiModule.DllCanUnloadNow();
+    hr = g_Module.DllCanUnloadNow();
 
     OSR_LOG_TRACE("Leaving %!FUNC!: %!HRESULT!.", hr);
 
@@ -222,7 +222,7 @@ __useHeader STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv) 
 
     OSR_LOG_TRACE("Entering %!FUNC!(%!CLSID!, %!IID!, 0x%p).", &rclsid, &riid, ppv);
 
-    hr = g_OsrUsbApiModule.DllGetClassObject(rclsid, riid, ppv);
+    hr = g_Module.DllGetClassObject(rclsid, riid, ppv);
 
     if (S_OK == hr)
     {
@@ -267,7 +267,7 @@ __useHeader STDAPI DllRegisterServer(void) throw()
     //
     // Registers object, typelib and all interfaces in typelib
     //
-    hr = g_OsrUsbApiModule.DllRegisterServer();
+    hr = g_Module.DllRegisterServer();
 
     OSR_LOG_TRACE("Leaving %!FUNC!: %!HRESULT!.", hr);
 
@@ -303,7 +303,7 @@ __useHeader STDAPI DllUnregisterServer(void) throw()
 
     OSR_LOG_TRACE("Entering %!FUNC!.");
 
-    hr = g_OsrUsbApiModule.DllUnregisterServer();
+    hr = g_Module.DllUnregisterServer();
 
     OSR_LOG_TRACE("Leaving %!FUNC!: %!HRESULT!.", hr);
 

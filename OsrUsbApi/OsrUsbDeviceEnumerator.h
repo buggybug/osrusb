@@ -16,7 +16,7 @@ Module Name:
 
 Abstract:
 
-    This module contains the type definitions for the COsrUsbDeviceEnumerator
+    This module contains the type definitions for the CUsbDeviceEnumerator
     class.
 
 --*/
@@ -33,22 +33,24 @@ Abstract:
 #include <atlcom.h>
 #include <OsrUsbApiDll.h>
 
+namespace OSR {
+
 //
 // This class provides methods for enumerating IOsrUsbDevice objects
 //
 
-class ATL_NO_VTABLE COsrUsbDeviceEnumerator :
+class ATL_NO_VTABLE CUsbDeviceEnumerator :
     public ATL::CComObjectRootEx<ATL::CComMultiThreadModel>,
-    public ATL::CComCoClass<COsrUsbDeviceEnumerator, &CLSID_OsrUsbDeviceEnumerator>,
+    public ATL::CComCoClass<CUsbDeviceEnumerator, &CLSID_OsrUsbDeviceEnumerator>,
     public IOsrUsbDeviceEnumerator
 {
 public:
-    COsrUsbDeviceEnumerator() throw();
+    CUsbDeviceEnumerator() throw();
 
 DECLARE_REGISTRY_RESOURCEID(IDR_OSRUSBAPI_ENUMERATOR_REGISTRY)
-DECLARE_NOT_AGGREGATABLE(COsrUsbDeviceEnumerator)
+DECLARE_NOT_AGGREGATABLE(CUsbDeviceEnumerator)
 
-BEGIN_COM_MAP(COsrUsbDeviceEnumerator)
+BEGIN_COM_MAP(CUsbDeviceEnumerator)
     COM_INTERFACE_ENTRY(IOsrUsbDeviceEnumerator)
 END_COM_MAP()
 
@@ -61,20 +63,22 @@ public:
     IFACEMETHOD(GetDeviceByIndex)(__in DWORD dwDeviceId, __out void** ppDevice);
 
 protected:
-    ~COsrUsbDeviceEnumerator() throw();
+    ~CUsbDeviceEnumerator() throw();
 
 private:
 //
 // Private to avoid accidental use
 //
-    COsrUsbDeviceEnumerator(const COsrUsbDeviceEnumerator&) throw();
-    COsrUsbDeviceEnumerator& operator=(const COsrUsbDeviceEnumerator&) throw();
+    CUsbDeviceEnumerator(const CUsbDeviceEnumerator&) throw();
+    CUsbDeviceEnumerator& operator=(const CUsbDeviceEnumerator&) throw();
 };
 
 //
 // Provide support for the registration, initialization, and creation of a
 // class so it can be externally creatable via CoCreateInstance
 //
-OBJECT_ENTRY_AUTO(__uuidof(OsrUsbDeviceEnumerator), COsrUsbDeviceEnumerator)
+OBJECT_ENTRY_AUTO(__uuidof(OsrUsbDeviceEnumerator), CUsbDeviceEnumerator)
+
+}; /* namespace OSR */
 
 #endif /* !defined(OSRUSBDEVICEENUMERATOR_H__2622B424_6F44_4CC8_AB63_EB1B1C93AD31__INCLUDED_) */

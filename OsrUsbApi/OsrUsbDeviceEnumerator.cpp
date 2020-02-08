@@ -16,7 +16,7 @@ Module Name:
 
 Abstract:
 
-    This module contains the implementation of the COsrUsbDeviceEnumerator
+    This module contains the implementation of the CUsbDeviceEnumerator
     object.
 
 --*/
@@ -38,20 +38,22 @@ Abstract:
 #include "OsrUsbDeviceEnumerator.tmh"
 #endif /* defined(EVENT_TRACING) */
 
+namespace OSR {
+
 //+---------------------------------------------------------------------------
 //
-// COsrUsbDeviceEnumerator::COsrUsbDeviceEnumerator
+// CUsbDeviceEnumerator::CUsbDeviceEnumerator
 //
 // Object constructor function.
 //
 //----------------------------------------------------------------------------
-COsrUsbDeviceEnumerator::COsrUsbDeviceEnumerator() throw()
+CUsbDeviceEnumerator::CUsbDeviceEnumerator() throw()
 {
 }
 
 //+---------------------------------------------------------------------------
 //
-// COsrUsbDeviceEnumerator::EnumerateDevices
+// CUsbDeviceEnumerator::EnumerateDevices
 //
 // Enumerates the OSR USB devices available in the system that may be
 // controlled by the DLL.
@@ -80,7 +82,7 @@ COsrUsbDeviceEnumerator::COsrUsbDeviceEnumerator() throw()
 //      E_OUTOFMEMORY - Out of memory.
 //
 //----------------------------------------------------------------------------
-STDMETHODIMP COsrUsbDeviceEnumerator::EnumerateDevices()
+STDMETHODIMP CUsbDeviceEnumerator::EnumerateDevices()
 {
     HRESULT hr = E_NOTIMPL;
 
@@ -92,7 +94,7 @@ STDMETHODIMP COsrUsbDeviceEnumerator::EnumerateDevices()
 
 //+---------------------------------------------------------------------------
 //
-// COsrUsbDeviceEnumerator::GetDeviceCount
+// CUsbDeviceEnumerator::GetDeviceCount
 //
 // Retrieves the number of known OSR USB devices that are currently connected
 // to the computer.
@@ -106,7 +108,7 @@ STDMETHODIMP COsrUsbDeviceEnumerator::EnumerateDevices()
 //      E_POINTER - Parameter pdwDeviceCount is NULL.
 //
 //----------------------------------------------------------------------------
-__useHeader STDMETHODIMP COsrUsbDeviceEnumerator::GetDeviceCount(DWORD* pdwDeviceCount)
+__useHeader STDMETHODIMP CUsbDeviceEnumerator::GetDeviceCount(DWORD* pdwDeviceCount)
 {
     HRESULT hr = E_NOTIMPL;
 
@@ -118,7 +120,7 @@ __useHeader STDMETHODIMP COsrUsbDeviceEnumerator::GetDeviceCount(DWORD* pdwDevic
 
 //+---------------------------------------------------------------------------
 //
-// COsrUsbDeviceEnumerator::GetDeviceByIndex
+// CUsbDeviceEnumerator::GetDeviceByIndex
 //
 // Retrieves an OSR USB device that is identified by an ID value.
 //
@@ -142,7 +144,7 @@ __useHeader STDMETHODIMP COsrUsbDeviceEnumerator::GetDeviceCount(DWORD* pdwDevic
 //                              successful EnumerateDevices call.
 //
 //----------------------------------------------------------------------------
-__useHeader STDMETHODIMP COsrUsbDeviceEnumerator::GetDeviceByIndex(DWORD dwDeviceId, void** ppDevice)
+__useHeader STDMETHODIMP CUsbDeviceEnumerator::GetDeviceByIndex(DWORD dwDeviceId, void** ppDevice)
 {
     HRESULT hr = E_NOTIMPL;
 
@@ -154,11 +156,13 @@ __useHeader STDMETHODIMP COsrUsbDeviceEnumerator::GetDeviceByIndex(DWORD dwDevic
 
 //+---------------------------------------------------------------------------
 //
-// COsrUsbDeviceEnumerator::~COsrUsbDeviceEnumerator
+// CUsbDeviceEnumerator::~CUsbDeviceEnumerator
 //
 // Object destructor function.
 //
 //----------------------------------------------------------------------------
-COsrUsbDeviceEnumerator::~COsrUsbDeviceEnumerator() throw()
+CUsbDeviceEnumerator::~CUsbDeviceEnumerator() throw()
 {
 }
+
+}; /* namespace OSR */

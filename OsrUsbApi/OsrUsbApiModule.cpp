@@ -16,7 +16,7 @@ Module Name:
 
 Abstract:
 
-    This module contains the implementation of the COsrUsbApiModule object.
+    This module contains the implementation of the CUsbApiModule object.
 
 --*/
 
