@@ -33,17 +33,6 @@ Environment:
 #pragma intrinsic(_ReturnAddress)
 #endif /* defined(_MSC_VER) && (_MSC_VER >= 1300) */
 
-//
-// Tracing level description table, each level is directly mapped by its value
-//
-PCTSTR g_rgszLevelDescription[] = {
-    _T("[%s]"),                     // TRACE_LEVEL_NONE
-    _T("critical error"),           // TRACE_LEVEL_CRITICAL
-    _T("error"),                    // TRACE_LEVEL_ERROR
-    _T("warning"),                  // TRACE_LEVEL_WARNING
-    _T("information"),              // TRACE_LEVEL_INFORMATION
-    _T("trace")};                   // TRACE_LEVEL_VERBOSE
-
 //+---------------------------------------------------------------------------
 //
 // _OsrLogBugCheck
@@ -100,14 +89,25 @@ __useHeader BOOLEAN _OsrLogBugCheck(ULONG Level)
 //----------------------------------------------------------------------------
 __useHeader BOOLEAN _OsrLogDebug(ULONG Level)
 {
+    //
+    // Tracing level description table, each level is directly mapped by its value
+    //
+    static PCTSTR rgszLevelDescription[] = {
+        _T("[%s]"),                     // TRACE_LEVEL_NONE
+        _T("critical error"),           // TRACE_LEVEL_CRITICAL
+        _T("error"),                    // TRACE_LEVEL_ERROR
+        _T("warning"),                  // TRACE_LEVEL_WARNING
+        _T("information"),              // TRACE_LEVEL_INFORMATION
+        _T("trace")};                   // TRACE_LEVEL_VERBOSE
+
     volatile const PVOID pReturnAddress = ::_ReturnAddress();
 
     //
     // Find a corresponding debug event description string in the level
     // description array
     //
-    const PCTSTR pszLevelDescription = g_rgszLevelDescription[
-        Level < ARRAYSIZE(g_rgszLevelDescription) ? Level : 0];
+    const PCTSTR pszLevelDescription = rgszLevelDescription[
+        Level < ARRAYSIZE(rgszLevelDescription) ? Level : 0];
 
     TCHAR szBuffer[64];
 
