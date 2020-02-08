@@ -99,9 +99,9 @@ extern "C" BOOL WINAPI DllMain(
         //
         // Initialize WPP tracing on DLL module load
         //
-        WPP_INIT_TRACING(_CRT_WIDE(OSR_USB_API_LOGGING_NAME));
+        WPP_INIT_TRACING(_CRT_WIDE(OSRUSBAPI_LOGGING_NAME));
 
-        OSR_LOG_INFORMATION("%s module was loaded.", OSR_USB_API_LOGGING_NAME);
+        OSR_LOG_INFORMATION("%s module was loaded.", OSRUSBAPI_LOGGING_NAME);
     }
 
     //
@@ -154,7 +154,7 @@ extern "C" BOOL WINAPI DllMain(
 
     if (DLL_PROCESS_DETACH == dwReason || DLL_PROCESS_ATTACH == dwReason && !bStatus)
     {
-        OSR_LOG_INFORMATION("%s module was unloaded.", OSR_USB_API_LOGGING_NAME);
+        OSR_LOG_INFORMATION("%s module was unloaded.", OSRUSBAPI_LOGGING_NAME);
 
         //
         // Cleanup tracing on module unload or on failed attempt to load DLL,

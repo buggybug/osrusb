@@ -117,7 +117,7 @@ __useHeader BOOLEAN _OsrLogDebug(ULONG Level)
     const int cchWritten = ::_sntprintf_s(
         szBuffer,
         ARRAYSIZE(szBuffer) - 1,
-        _T(OSR_USB_API_LOGGING_NAME) _T(" %s event occured at %p.\n"),
+        _T(OSRUSBAPI_LOGGING_NAME) _T(" %s event occured at %p.\n"),
         pszLevelDescription,
         pReturnAddress);
 
