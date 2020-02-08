@@ -44,7 +44,8 @@ SOURCES=\
         OsrUsbFx2Driver.c                    \
         OsrUsbFx2Logging.c
 
-#TARGETLIBS=\
+TARGETLIBS=\
+        $(DDK_LIB_PATH)\rtlver.lib
 
 #
 # Comment the below line to disable tracing. All the debug traces

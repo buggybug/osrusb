@@ -177,26 +177,27 @@ Return Value:
     // Initialize the device object
     //
 
-#if NTDDI_VERSION >= NTDDI_VISTA
-    //
-    // Indicate that the driver is pageable, it allows the power manager to
-    // call such driver at IRQL = PASSIVE_LEVEL
-    //
-    deviceObject->Flags |= DO_POWER_PAGABLE;
-#else /* NTDDI_VERSION < NTDDI_VISTA */
-    //
-    // Prior to the Windows Vista, the operating system requires that all device
-    // objects within a device stack have the same power-related flags set
-    //
-    deviceObject->Flags |= (topDeviceObject->Flags &
-        (DO_POWER_INRUSH | DO_POWER_PAGABLE /* | DO_POWER_NOOP */));
+    if (RtlIsNtDdiVersionAvailable (NTDDI_VISTA)) {
+        //
+        // Indicate that the driver is pageable, it allows the power manager to
+        // call such driver at IRQL = PASSIVE_LEVEL
+        //
+        deviceObject->Flags |= DO_POWER_PAGABLE;
+    }
+    else {
+        //
+        // Prior to the Windows Vista, the operating system requires that all device
+        // objects within a device stack have the same power-related flags set
+        //
+        deviceObject->Flags |= (topDeviceObject->Flags &
+            (DO_POWER_INRUSH | DO_POWER_PAGABLE /* | DO_POWER_NOOP */));
 
-    //
-    // TODO: Move power manager related routines to the pageable code section
-    //       (PAGExxxx) and call MmLockPagableCodeSection function here to lock
-    //       them (entire code section) in memory if DO_POWER_PAGABLE is set
-    //
-#endif /* NTDDI_VERSION >= NTDDI_VISTA */
+        //
+        // TODO: Move power manager related routines to the pageable code section
+        //       (PAGExxxx) and call MmLockPagableCodeSection function here to lock
+        //       them (entire code section) in memory if DO_POWER_PAGABLE is set
+        //
+    }
 
     //
     // Typically, the function driver is responsible for the device power policy
