@@ -35,6 +35,24 @@ import "unknwn.idl";
 
 
 // ---------------------------------------------------------------------------
+// IOsrUsbDevice
+//
+// Represents a particular OSR USB device and provides class-wide methods for
+// interaction and manipulation.
+//
+[
+    object,
+    local,
+    uuid(AE962B52-070A-4A1A-8D50-7C9B12920324),
+    nonextensible,
+    helpstring("OsrUsbDevice Interface"),
+    pointer_default(unique)
+]
+interface IOsrUsbDevice : IUnknown
+{
+};
+
+// ---------------------------------------------------------------------------
 // IOsrUsbDeviceEnumerator
 //
 // Provides methods for enumerating IOsrUsbDevice objects.
