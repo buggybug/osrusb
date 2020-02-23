@@ -138,7 +138,7 @@ interface IOsrUsbDeviceEnumerator : IUnknown
     //                              successful EnumerateDevices call.
     //
     [id(3), helpstring("method GetDeviceByIndex")]
-    HRESULT GetDeviceByIndex([in, annotation("__in")] DWORD dwDeviceId, [out, annotation("__out")] void** ppDevice);
+    HRESULT GetDeviceByIndex([in, annotation("__in")] DWORD dwDeviceId, [out, annotation("__out")] IOsrUsbDevice** ppDevice);
 };
 
 // ---------------------------------------------------------------------
