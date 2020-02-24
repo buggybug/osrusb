@@ -144,7 +144,7 @@ __useHeader STDMETHODIMP CUsbDeviceEnumerator::GetDeviceCount(DWORD* pdwDeviceCo
 //                              successful EnumerateDevices call.
 //
 //----------------------------------------------------------------------------
-__useHeader STDMETHODIMP CUsbDeviceEnumerator::GetDeviceByIndex(DWORD dwDeviceId, void** ppDevice)
+__useHeader STDMETHODIMP CUsbDeviceEnumerator::GetDeviceByIndex(DWORD dwDeviceId, IOsrUsbDevice** ppDevice)
 {
     HRESULT hr = E_NOTIMPL;
 

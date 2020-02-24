@@ -60,7 +60,7 @@ END_COM_MAP()
 public:
     IFACEMETHOD(EnumerateDevices)();
     IFACEMETHOD(GetDeviceCount)(__out DWORD* pdwDeviceCount);
-    IFACEMETHOD(GetDeviceByIndex)(__in DWORD dwDeviceId, __out void** ppDevice);
+    IFACEMETHOD(GetDeviceByIndex)(__in DWORD dwDeviceId, __out IOsrUsbDevice** ppDevice);
 
 protected:
     ~CUsbDeviceEnumerator() throw();
