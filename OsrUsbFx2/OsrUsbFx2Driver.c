@@ -228,6 +228,7 @@ Return Value:
     // Supply entry points for the standard driver's routines
     //
 
+    DriverObject->MajorFunction[IRP_MJ_PNP] = &OsrUsbFx2_DispatchPnP;
     DriverObject->DriverUnload = &OsrUsbFx2_Unload;
     DriverObject->DriverExtension->AddDevice = &OsrUsbFx2_PnPAddDevice;
 
