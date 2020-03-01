@@ -42,7 +42,8 @@ INCLUDES=\
 SOURCES=\
         OsrUsbFx2Device.c                    \
         OsrUsbFx2Driver.c                    \
-        OsrUsbFx2Logging.c
+        OsrUsbFx2Logging.c                   \
+        OsrUsbFx2PnP.c
 
 TARGETLIBS=\
         $(DDK_LIB_PATH)\rtlver.lib
