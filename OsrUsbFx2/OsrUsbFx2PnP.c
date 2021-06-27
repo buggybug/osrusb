@@ -53,6 +53,58 @@ DRIVER_DISPATCH OsrUsbFx2_QueryCapabilities;
 DRIVER_DISPATCH OsrUsbFx2_SurpriseRemoval;
 
 //
+// Define the sections that allow for discarding (i.e. paging) some of the data
+//
+
+#if defined (ALLOC_DATA_PRAGMA)
+#pragma const_seg(push, "PAGECONST")
+#endif /* defined (ALLOC_DATA_PRAGMA) */
+
+//
+// A dispatch table consisting of an array of entry points for the driver's
+// Plug and Play (PnP) dispatch routines, the array's index values are the
+// IRP_MN_XXX values representing each IRP minor function code
+//
+CONST PDRIVER_DISPATCH OsrUsbFx2_PnPDispatchTable[] = {
+    &OsrUsbFx2_StartDevice,                  // IRP_MN_START_DEVICE
+    &OsrUsbFx2_QueryRemoveDevice,            // IRP_MN_QUERY_REMOVE_DEVICE
+    &OsrUsbFx2_RemoveDevice,                 // IRP_MN_REMOVE_DEVICE
+    &OsrUsbFx2_CancelRemoveDevice,           // IRP_MN_CANCEL_REMOVE_DEVICE
+    &OsrUsbFx2_StopDevice,                   // IRP_MN_STOP_DEVICE
+    &OsrUsbFx2_QueryStopDevice,              // IRP_MN_QUERY_STOP_DEVICE
+    &OsrUsbFx2_CancelStopDevice,             // IRP_MN_CANCEL_STOP_DEVICE
+
+    NULL,                                    // IRP_MN_QUERY_DEVICE_RELATIONS
+    NULL,                                    // IRP_MN_QUERY_INTERFACE
+    &OsrUsbFx2_QueryCapabilities,            // IRP_MN_QUERY_CAPABILITIES
+    NULL,                                    // IRP_MN_QUERY_RESOURCES
+    NULL,                                    // IRP_MN_QUERY_RESOURCE_REQUIREMENTS
+    NULL,                                    // IRP_MN_QUERY_DEVICE_TEXT
+    NULL,                                    // IRP_MN_FILTER_RESOURCE_REQUIREMENTS
+
+    NULL,                                    // ???
+    NULL,                                    // IRP_MN_READ_CONFIG
+    NULL,                                    // IRP_MN_WRITE_CONFIG
+    NULL,                                    // IRP_MN_EJECT
+    NULL,                                    // IRP_MN_SET_LOCK
+    NULL,                                    // IRP_MN_QUERY_ID
+    NULL,                                    // IRP_MN_QUERY_PNP_DEVICE_STATE
+    NULL,                                    // IRP_MN_QUERY_BUS_INFORMATION
+    NULL,                                    // IRP_MN_DEVICE_USAGE_NOTIFICATION
+    NULL,                                    // IRP_MN_SURPRISE_REMOVAL
+
+    NULL                                     // IRP_MN_QUERY_LEGACY_BUS_INFORMATION
+
+#if (NTDDI_VERSION >= NTDDI_WIN7)
+    , NULL                                   // IRP_MN_DEVICE_ENUMERATED
+#endif /* NTDDI_VERSION >= NTDDI_WIN7 */
+};
+
+#if defined (ALLOC_DATA_PRAGMA)
+#pragma const_seg(pop)
+#endif /* defined (ALLOC_DATA_PRAGMA) */
+
+//
 // Define the sections that allow for discarding (i.e. paging) some of the code
 //
 
@@ -97,8 +149,10 @@ Return Value:
 
 --*/
 {
+    PDRIVER_DISPATCH driverDispatch;
+    POSRUSBFX2_DEVICE_EXTENSION deviceExtension;
     PIO_STACK_LOCATION irpStack;
-    NTSTATUS status = STATUS_SUCCESS;
+    NTSTATUS status;
 
     PAGED_CODE ();
 
@@ -107,6 +161,80 @@ Return Value:
     irpStack = IoGetCurrentIrpStackLocation (Irp);
 
     ASSERT (IRP_MJ_PNP == irpStack->MajorFunction);
+
+    //
+    // All drivers for a device must have the opportunity to handle PnP IRPs
+    // for the device unless one of the drivers encounters an error, the PnP
+    // manager sends IRPs to the top driver in a device stack, function drivers
+    // pass the IRP down to the next driver, and the parent bus driver
+    // completes the IRP
+    //
+    // If a driver receives an IRP with a code it does not handle, it
+    // must not fail the IRP, instead it must pass such an IRP down to the next
+    // driver without modifying the IRP's status
+    //
+
+    deviceExtension = DeviceObject->DeviceExtension;
+
+    //
+    // Try to grab the release lock, so the device object cannot be detached
+    // while the IRP is being processed by the driver
+    //
+    // It is a responsibility of the particular dispatch routine to release
+    // the remove lock once the operation is complete, if processing is
+    // synchronous then it should be released inside the dispatch routine,
+    // otherwise in the context of the completion routine
+    //
+    status = IoAcquireRemoveLock (&deviceExtension->RemoveLock, Irp);
+
+    if (NT_SUCCESS (status)) {
+
+        driverDispatch = NULL;
+
+        if (irpStack->MinorFunction < ARRAYSIZE(OsrUsbFx2_PnPDispatchTable)) {
+            driverDispatch = OsrUsbFx2_PnPDispatchTable[irpStack->MinorFunction];
+        }
+
+        //
+        // Even if the IRP minor function code is within the valid range it
+        // can be unhandled by this driver as described above, such handlers
+        // are initialized with NULL pointer value
+        //
+        if (NULL != driverDispatch) {
+            status = driverDispatch (DeviceObject, Irp);
+        }
+        else {
+
+            //
+            // Pass an IRP down a device stack
+            //
+
+            IoSkipCurrentIrpStackLocation (Irp);
+            status = IoCallDriver (deviceExtension->TopDeviceObject, Irp);
+
+            IoReleaseRemoveLock (&deviceExtension->RemoveLock, Irp);
+        }
+    }
+    else {
+
+        OSR_LOG_WARNING (
+            "Failed to acquire the device remove lock: %!STATUS!.",
+            status
+            );
+
+        //
+        // The device object is about to be deleted, set the corresponding
+        // status value, so the caller is able to react correctly and does not
+        // reuse this object for any further operations
+        //
+        // N.B. Typically on this point status is set to the
+        //      STATUS_DELETE_PENDING value that can be interpreted incorrectly
+        //
+        status = STATUS_NO_SUCH_DEVICE;
+
+        Irp->IoStatus.Status = status;
+        IoCompleteRequest (Irp, IO_NO_INCREMENT);
+    }
 
     OSR_LOG_TRACE ("Leaving %!FUNC!: %!STATUS!.", status);
 

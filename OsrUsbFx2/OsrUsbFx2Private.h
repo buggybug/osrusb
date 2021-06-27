@@ -130,6 +130,12 @@ typedef struct _OSRUSBFX2_DEVICE_EXTENSION {
     //
     PDEVICE_OBJECT PhysicalDeviceObject;
 
+    //
+    // The device's detach and delete protection lock with a built-in mechanism
+    // to track the number of outstanding I/O operations
+    //
+    IO_REMOVE_LOCK RemoveLock;
+
 } OSRUSBFX2_DEVICE_EXTENSION, *POSRUSBFX2_DEVICE_EXTENSION;
 
 //

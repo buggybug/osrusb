@@ -216,6 +216,13 @@ Return Value:
     deviceExtension->TopDeviceObject = topDeviceObject;
     deviceExtension->PhysicalDeviceObject = PhysicalDeviceObject;
 
+    IoInitializeRemoveLock (
+        &deviceExtension->RemoveLock,
+        OSRUSBFX2_POOL_TAG,
+        0,
+        0
+        );
+
     //
     // The device object was successfully created and initialized, so assign
     // an output pointer
